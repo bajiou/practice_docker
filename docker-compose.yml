@@ -1,12 +1,12 @@
-version: "3.9"
-
 services:
   php:
     build: .
+    container_name: php_app
     ports:
       - "8080:80"
     volumes:
-      - .:/var/www/html
+      - ./src:/var/www/html
+      - ./db.env:/var/www/html/.env
 
   db:
     image: mysql:8.0
@@ -14,7 +14,8 @@ services:
     ports:
       - "3306:3306"
     env_file:
-      - "./db.env"
+      - ./db.env
+    command: --local-infile=1
 
 # docker-compose exec db mysql -u test_user -D test_database -p
 # rogin pass

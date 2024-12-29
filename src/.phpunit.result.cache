@@ -1,0 +1,1 @@
+{"version":1,"defects":{"CreateTableTest::testConnectDb":8,"CreateTableTest::testConnectionSuccess":7,"CreateTableTest::testConnectionFailure":7},"times":{"CreateTableTest::testConnectDb":0.029,"CreateTableTest::testConnectionSuccess":0.01,"CreateTableTest::testConnectionFailure":0.008}}

@@ -1,0 +1,55 @@
+コマンドからdocker内mysqlのテーブルにファイルをインポートする方法
+
+1.アクセスログファイルをMySQLサーバーの中にコピーする。
+- コピーコマンド
+docker cp access_log.txt $(docker compose ps -q db):/var/lib/mysql/access_log.txt
+
+2.MySQLのLOAD DATA LOCAL INFILEを使ってインポートする。
+mysql内で
+SHOW VARIABLES LIKE 'local_infile';を実行
+
++----------------+-------+
+| Variable_name  | Value |
++----------------+-------+
+| local_infile   | OFF   |
++----------------+-------+
+
+local_infile が OFF なら、ONに変更する必要があります。
+
+docker-compose.ymlにオプションを追加
+command: --local-infile=1
+
+docker compose down && docker compose up で再起動
+※再起動した場合、wikipedia_practiceデータベースは消えているため再度作成する
+　コピーも消えているのでまたコピーをする。
+
+再度ONになっているか確認
+
+mysqlサーバーに入る際は、こちらを使用
+why
+通常、MySQLクライアントはLOAD DATA LOCAL INFILEを無効にして接続します。
+--local-infile=1を指定することで、クライアントがLOAD DATA LOCAL INFILEを許可するようになります。
+
+docker compose exec db mysql -u root -p --local-infile=1
+
+
+LOAD DATA LOCAL INFILE 'var/lib/mysql-files/access_log.txt'
+INTO TABLE wikipedia_views
+FIELDS TERMINATED BY ' '
+LINES TERMINATED BY '\n'
+(domain_code, page_title, view_count, total_response_size);
+
+
+※LOAD DATA INFILEでも実際は行えるが「--secure-file-priv」というmysqlのデフォルト設定で厳しくなっているようでできなかった。
+
+
+LOAD DATA LOCAL INFILEは、クライアントのPCのファイルからインポートする方法です。
+この方法では、MySQLサーバーのsecure-file-privの影響を受けません。
+
+まとめ
+サーバーとクライアントの2つでLOAD DATA INFAILが無効にされている。
+サーバーではdocker-compose.ymlで有効に
+クライアントでは,docker compose exec db mysql -u root -p --local-infile=1でmysqlに入ることで一時的に有効にしている。
+
+サーバー：mysqlサーバー（データベース）
+クライアント:接続して操作する場所（パソコン）
